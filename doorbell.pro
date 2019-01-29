@@ -1,3 +1,4 @@
+VERSION=1.0.0
 QT += quick qml mqtt
 CONFIG += c++11
 
@@ -13,10 +14,19 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-        main.cpp \
+    main.cpp \
     qmlmqttclient.cpp
 
 HEADERS += qmlmqttclient.h
+
+DISTFILES += \
+    CircularProgressBar.qml \
+    DoorBell.qml \
+    LoadingScreen.qml \
+    main.qml \
+    Page.qml \
+    settings.js
+
 
 RESOURCES += qml.qrc
 
