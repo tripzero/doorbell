@@ -11,10 +11,10 @@ Window {
     title: qsTr("Doorbell")
     color: "black"
 
-    property variant currentPage: undefined
-    property variant pages: [doorBell, notifyingHost]
+    property variant currentPage: blank
+    property variant pages: [doorBell, notifyingHost, blank, no_soliciting_page]
 
-    property string camera_name: "front_door"
+    property string camera_name: "FrontDoor"
     property string topic_motion: camera_name + "/Motion"
     property string topic_reject_not_available: "doorbell/reject/not_available"
     property string topic_reject_no_soliciting: "doorbell/reject/no_soliciting"
@@ -31,6 +31,7 @@ Window {
 
         Component.onCompleted: {
             client.connectToHost()
+            text_msg.text = "connecting"
         }
 
         onConnected: {
@@ -52,9 +53,12 @@ Window {
         }
     }
 
-    function motion_detected() {
-        //text_msg.text = "motion detected"
-        ringer.show_ringer()
+    function motion_detected(val) {
+        text_msg.text = "motion " + val
+        if (val === "True")
+        {
+            show_ringer()
+        }
     }
 
     function not_available() {
@@ -62,8 +66,9 @@ Window {
     }
 
     function no_soliciting() {
-        text_msg.text = "No soliciting"
-        ringer.stop()
+        stop()
+        root.show(no_soliciting_page)
+        //text_msg.text = "No soliciting"
     }
 
     function show(page)
@@ -148,12 +153,16 @@ Window {
     }
 
     function show_ringer() {
-        root.show(doorBell)
-        ringer_timeout.start()
+        if (root.currentPage == blank)
+        {
+            root.show(doorBell)
+            stop()
+        }
     }
 
     function show_ringer_waiting() {
         root.show(notifyingHost)
+        stop()
     }
 
     function ring_bell() {
@@ -162,10 +171,15 @@ Window {
     }
 
     function stop() {
-        root.show(blank)
-
         multiring_timer.stop()
         ringer_timeout.stop()
+
+        blank_timeout.restart()
+    }
+
+    function show_blank() {
+        root.show(blank)
+        blank_timeout.stop()
     }
 
     DoorBell {
@@ -173,9 +187,9 @@ Window {
         objectName: "doorBell"
         anchors.fill: parent
         onPressed: {
-            ringer.show_ringer_waiting()
+            show_ringer_waiting()
             multiring_timer.start()
-            ringer.ring_bell()
+            ring_bell()
         }
     }
 
@@ -186,7 +200,7 @@ Window {
         property string hostName: "host"
 
         anchors.fill: parent
-        title: "notifying " + hostName
+        title: "Notifying " + hostName + "..."
 
         onOpenedChanged: {
             if (opened)
@@ -221,6 +235,31 @@ Window {
         }
     }
 
+    Page {
+        id: no_soliciting_page
+        objectName: "no_soliciting"
+        anchors.fill: parent
+        title: "No soliciting"
+
+        onOpenedChanged: {
+            if (opened)
+            {
+                //tts.speak("I am sorry, this host is not available for your call")
+            }
+        }
+
+        Text {
+            anchors.centerIn: parent
+            width: parent.width
+            height: 40
+            font.pixelSize: 50
+            text: "The host does not accept solicitors"
+            horizontalAlignment: Text.AlignHCenter
+            verticalAlignment: Text.AlignVCenter
+            color: "white"
+        }
+    }
+
     Timer {
         id: multiring_timer
         repeat: true
@@ -231,7 +270,7 @@ Window {
         property int run_max: 3
 
         onTriggered: {
-            ringer.ring_bell()
+            ring_bell()
             run_count++;
 
             if (run_count >= run_max)
@@ -247,8 +286,20 @@ Window {
         interval: 60000
 
         onTriggered: {
-            ringer.stop()
+            console.log("ringer timeout")
+            stop()
             not_available()
+        }
+    }
+
+    Timer {
+        id: blank_timeout
+        running: false
+        interval: 60000
+
+        onTriggered: {
+            console.log("blank timeout!")
+            show_blank()
         }
     }
 }
