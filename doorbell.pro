@@ -1,4 +1,4 @@
-VERSION=1.0.2
+VERSION=1.0.3
 QT += quick qml mqtt
 CONFIG += c++11
 
