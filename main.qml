@@ -1,13 +1,13 @@
-import QtQuick 2.11
-import QtQuick.Window 2.11
+import QtQuick 2.0
+import QtQuick.Window 2.0
 
 import MqttClient 1.0
 
 Window {
     id: root
     visible: true
-    width: 1080
-    height: 1920
+    width: 800 //1080
+    height: 400 //1920
     title: qsTr("Doorbell")
     color: "black"
 
@@ -66,7 +66,6 @@ Window {
     }
 
     function no_soliciting() {
-        stop()
         root.show(no_soliciting_page)
         //text_msg.text = "No soliciting"
     }
@@ -86,13 +85,10 @@ Window {
 
         console.log("Displaying: " + page.objectName);
 
-        page.open();
+        page.open()
         root.currentPage = page
 
-        if (!ringer_timeout.active)
-        {
-            ringer_timeout.start();
-        }
+        reset_blank()
     }
 
     function showStr(page)
@@ -133,7 +129,7 @@ Window {
         width: parent.width
         height: 50
         font.pixelSize: height/2
-        anchors.centerIn: parent
+        anchors.bottom: parent.bottom
         horizontalAlignment: Text.Center
         verticalAlignment: Text.Center
 
@@ -156,13 +152,11 @@ Window {
         if (root.currentPage == blank)
         {
             root.show(doorBell)
-            stop()
         }
     }
 
     function show_ringer_waiting() {
         root.show(notifyingHost)
-        stop()
     }
 
     function ring_bell() {
@@ -170,7 +164,7 @@ Window {
         console.log("publish result" + publish_ret)
     }
 
-    function stop() {
+    function reset_blank() {
         multiring_timer.stop()
         ringer_timeout.stop()
 
@@ -287,7 +281,6 @@ Window {
 
         onTriggered: {
             console.log("ringer timeout")
-            stop()
             not_available()
         }
     }
