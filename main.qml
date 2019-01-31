@@ -12,7 +12,7 @@ Window {
     color: "black"
 
     property variant currentPage: blank
-    property variant pages: [doorBell, notifyingHost, blank, no_soliciting_page]
+    property variant pages: [doorBell, notifyingHost, blank, no_soliciting_page, unavailable]
 
     property string camera_name: "FrontDoor"
     property string topic_motion: camera_name + "/Motion"
@@ -181,9 +181,11 @@ Window {
         objectName: "doorBell"
         anchors.fill: parent
         onPressed: {
-            show_ringer_waiting()
-            multiring_timer.start()
             ring_bell()
+            show_ringer_waiting()
+            blank_timeout.stop()
+            multiring_timer.start()
+            ringer_timeout.start()
         }
     }
 
